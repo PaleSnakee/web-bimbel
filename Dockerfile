@@ -19,6 +19,4 @@ RUN composer install \
     --prefer-dist \
     --optimize-autoloader
 
-RUN php artisan config:cache
-
 CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT}"]
