@@ -3,5 +3,5 @@
   "packages": {
     "php": "8.3"
   },
-  "buildAptPackages": ["bison", "re2c", "libcurl4-openssl-dev", "libgd-dev"]
+  "buildAptPackages": ["bison", "re2c", "libcurl4-openssl-dev", "libgd-dev", "libonig-dev"]
 }
