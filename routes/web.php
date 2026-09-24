@@ -47,3 +47,22 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
         return view('parent.dashboard');
     })->name('parent.dashboard');
 });
+
+Route::get('/run-migrations', function () {
+    try {
+        Artisan::call('migrate', [
+            '--force' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Migration berhasil dijalankan.',
+            'output' => Artisan::output(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
