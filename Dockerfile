@@ -11,7 +11,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+COPY . .
 
 RUN composer install \
     --no-dev \
@@ -19,8 +19,6 @@ RUN composer install \
     --prefer-dist \
     --optimize-autoloader
 
-COPY . .
-
 RUN php artisan config:cache
 
-CMD php artisan serve --host=0.0.0.0 --port=${PORT}
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT}"]
