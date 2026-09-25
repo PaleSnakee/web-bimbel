@@ -66,3 +66,22 @@ Route::get('/run-migrations', function () {
         ], 500);
     }
 });
+
+Route::get('/run-seeder', function () {
+    try {
+        Artisan::call('db:seed', [
+            '--force' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Seeder berhasil dijalankan.',
+            'output' => Artisan::output(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
