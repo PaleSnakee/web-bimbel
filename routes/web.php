@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,9 +26,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Dashboard Routes
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
 
 Route::middleware(['auth', 'role:tutor'])->group(function () {
@@ -46,42 +45,4 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::get('/parent/dashboard', function () {
         return view('parent.dashboard');
     })->name('parent.dashboard');
-});
-
-Route::get('/run-migrations', function () {
-    try {
-        Artisan::call('migrate', [
-            '--force' => true,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Migration berhasil dijalankan.',
-            'output' => Artisan::output(),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-});
-
-Route::get('/run-seeder', function () {
-    try {
-        Artisan::call('db:seed', [
-            '--force' => true,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Seeder berhasil dijalankan.',
-            'output' => Artisan::output(),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
-    }
 });
