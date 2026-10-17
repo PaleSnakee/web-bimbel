@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\ClassRoomController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SubjectController;
+use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('classes', ClassRoomController::class)->parameters(['classes' => 'classRoom']);
+    Route::resource('subjects', SubjectController::class);
+    Route::resource('tutors', TutorController::class);
 });
 
 Route::middleware(['auth', 'role:tutor'])->group(function () {
