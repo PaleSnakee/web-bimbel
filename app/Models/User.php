@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -36,6 +35,16 @@ class User extends Authenticatable
     public function tutor(): HasOne
     {
         return $this->hasOne(Tutor::class);
+    }
+
+    public function guardian(): HasOne
+    {
+        return $this->hasOne(Guardian::class);
+    }
+
+    public function student(): HasOne
+    {
+        return $this->hasOne(Student::class);
     }
 
     public function isAdmin(): bool

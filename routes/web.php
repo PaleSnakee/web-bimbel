@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\ClassRoomController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ParentController;
+use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\AuthController;
@@ -34,6 +36,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('classes', ClassRoomController::class)->parameters(['classes' => 'classRoom']);
     Route::resource('subjects', SubjectController::class);
     Route::resource('tutors', TutorController::class);
+    Route::resource('parents', ParentController::class)->parameters(['parents' => 'parent']);
+    Route::resource('students', StudentController::class);
 });
 
 Route::middleware(['auth', 'role:tutor'])->group(function () {

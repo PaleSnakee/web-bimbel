@@ -5,22 +5,25 @@
             href="{{ route('admin.dashboard') }}"><span>▦</span><span>Dashboard</span></a>
         <div class="nav-group">
             <button
-                class="nav-link nav-toggle {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.subjects.*') || request()->routeIs('admin.tutors.*') ? 'is-active' : '' }}"
+                class="nav-link nav-toggle {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.subjects.*') || request()->routeIs('admin.tutors.*') || request()->routeIs('admin.parents.*') || request()->routeIs('admin.students.*') ? 'is-active' : '' }}"
                 type="button" data-menu-toggle
-                aria-expanded="{{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.subjects.*') || request()->routeIs('admin.tutors.*') ? 'true' : 'false' }}"><span>▤</span><span>Data
+                aria-expanded="{{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.subjects.*') || request()->routeIs('admin.tutors.*') || request()->routeIs('admin.parents.*') || request()->routeIs('admin.students.*') ? 'true' : 'false' }}"><span>▤</span><span>Data
                     Master</span><span class="chevron">⌄</span></button>
             <div class="submenu" @unless (request()->routeIs('admin.classes.*') ||
                     request()->routeIs('admin.subjects.*') ||
-                    request()->routeIs('admin.tutors.*')) hidden @endunless>
+                    request()->routeIs('admin.tutors.*') ||
+                    request()->routeIs('admin.parents.*') ||
+                    request()->routeIs('admin.students.*')) hidden @endunless>
                 <a class="submenu-item {{ request()->routeIs('admin.classes.*') ? 'is-active' : '' }}"
                     href="{{ route('admin.classes.index') }}">Manajemen Kelas</a>
                 <a class="submenu-item {{ request()->routeIs('admin.subjects.*') ? 'is-active' : '' }}"
                     href="{{ route('admin.subjects.index') }}">Mata Pelajaran</a>
                 <a class="submenu-item {{ request()->routeIs('admin.tutors.*') ? 'is-active' : '' }}"
                     href="{{ route('admin.tutors.index') }}">Manajemen Tutor</a>
-                @foreach (['Manajemen Orang Tua', 'Manajemen Siswa'] as $item)
-                    <span class="submenu-item">{{ $item }} <small>segera hadir</small></span>
-                @endforeach
+                <a class="submenu-item {{ request()->routeIs('admin.parents.*') ? 'is-active' : '' }}"
+                    href="{{ route('admin.parents.index') }}">Manajemen Orang Tua</a>
+                <a class="submenu-item {{ request()->routeIs('admin.students.*') ? 'is-active' : '' }}"
+                    href="{{ route('admin.students.index') }}">Manajemen Siswa</a>
             </div>
         </div>
         <div class="nav-group"><button class="nav-link nav-toggle" type="button" data-menu-toggle

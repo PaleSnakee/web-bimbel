@@ -727,6 +727,23 @@ button {
     font-size: 11px;
     color: #d92d20;
 }
+.form-section {
+    padding: 0 0 22px;
+    margin: 0 0 22px;
+    border-bottom: 1px solid var(--line);
+}
+.form-section:last-of-type {
+    margin-bottom: 0;
+}
+.form-section-title {
+    margin: 0 0 17px;
+    color: #344054;
+    font-size: 14px;
+}
+.field-hint {
+    font-size: 11px;
+    color: #667085;
+}
 .form-actions {
     display: flex;
     justify-content: flex-end;

@@ -57,7 +57,7 @@ class ClassRoomController extends Controller
     {
         return view('admin.classes.show', [
             'classRoom' => $classRoom,
-            'enrolledStudentsCount' => 0,
+            'enrolledStudentsCount' => $classRoom->students()->count(),
         ]);
     }
 
