@@ -1,19 +1,26 @@
-
 <?php
 
 $appBasePath = $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__);
+$runtimePath = '/tmp/laravel';
+$bootstrapCachePath = $runtimePath.'/bootstrap/cache';
 
-// Gunakan direktori sementara yang writable di Vercel.
-$cachePath = '/tmp/laravel-bootstrap-cache';
-
-if (!is_dir($cachePath)) {
-    mkdir($cachePath, 0755, true);
+foreach ([
+    $runtimePath,
+    $runtimePath.'/logs',
+    $runtimePath.'/framework/cache',
+    $runtimePath.'/framework/sessions',
+    $runtimePath.'/framework/views',
+    $bootstrapCachePath,
+] as $directory) {
+    if (! is_dir($directory)) {
+        mkdir($directory, 0755, true);
+    }
 }
 
 $app = new Illuminate\Foundation\Application($appBasePath);
 
-// Arahkan lokasi cache Laravel ke direktori sementara.
-$app->useBootstrapPath($cachePath);
+$app->useStoragePath($runtimePath);
+$app->useBootstrapPath($runtimePath.'/bootstrap');
 
 $app->singleton(
     Illuminate\Contracts\Http\Kernel::class,
