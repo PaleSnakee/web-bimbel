@@ -1,4 +1,4 @@
-**Applying suggested code reformatting****Applying suggested code reformatting**@extends('layouts.admin')
+@extends('layouts.admin')
 @section('title', 'Detail Orang Tua')
 @section('content')
     <section class="page-heading">
