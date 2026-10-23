@@ -1,6 +1,5 @@
-<?php
 
-require __DIR__ . '/../public/index.php';
+<?php
 
 define('LARAVEL_START', microtime(true));
 
