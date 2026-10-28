@@ -7,13 +7,29 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function showLogin()
+    public function showLogin(Request $request)
     {
-        if (Auth::check()) {
-            return redirect()->route('admin.dashboard');
+        if (! Auth::check()) {
+            return view('auth.login');
         }
 
-        return view('auth.login');
+        $dashboardRoute = match (Auth::user()->role) {
+            'admin' => 'admin.dashboard',
+            'tutor' => 'tutor.dashboard',
+            'student' => 'student.dashboard',
+            'parent' => 'parent.dashboard',
+            default => null,
+        };
+
+        if ($dashboardRoute) {
+            return redirect()->route($dashboardRoute);
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('error', 'Role akun tidak valid. Silakan hubungi administrator.');
     }
 
     public function login(Request $request)
