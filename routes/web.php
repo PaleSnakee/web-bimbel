@@ -95,11 +95,3 @@ Route::get('/run-seeder', function () {
         ], 500);
     }
 });
-
-Route::get('/clear-vercel-cache', function () {
-    Artisan::call('config:clear');
-    Artisan::call('cache:clear');
-    Artisan::call('view:clear');
-    Artisan::call('route:clear');
-    return "Semua cache Vercel berhasil dibersihkan!";
-});
