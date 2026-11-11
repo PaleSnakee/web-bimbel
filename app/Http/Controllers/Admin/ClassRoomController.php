@@ -13,7 +13,7 @@ class ClassRoomController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = ClassRoom::query();
+        $query = ClassRoom::query()->withCount('students');
 
         if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($builder) use ($search) {
@@ -78,9 +78,11 @@ class ClassRoomController extends Controller
 
     public function destroy(ClassRoom $classRoom): RedirectResponse
     {
-        // Relasi siswa, tutor, absensi, nilai, dan riwayat akademik belum ada
-        // pada skema aplikasi. Saat relasi tersedia, pemeriksaan penggunaan kelas
-        // wajib ditambahkan di sini sebelum penghapusan diizinkan.
+        if ($classRoom->students()->exists()) {
+            return redirect()->route('admin.classes.index')
+                ->with('error', "Kelas {$classRoom->code} tidak dapat dihapus karena masih memiliki murid terdaftar. Nonaktifkan kelas melalui menu edit setelah murid dipindahkan atau tidak lagi ditugaskan.");
+        }
+
         $classRoom->delete();
 
         return redirect()->route('admin.classes.index')

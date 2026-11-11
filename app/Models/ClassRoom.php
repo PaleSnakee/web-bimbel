@@ -33,6 +33,11 @@ class ClassRoom extends Model
         return $this->hasMany(Student::class);
     }
 
+    public function learningSchedules(): HasMany
+    {
+        return $this->hasMany(LearningSchedule::class);
+    }
+
     public function enrolledCount(): int
     {
         return $this->students()->count();

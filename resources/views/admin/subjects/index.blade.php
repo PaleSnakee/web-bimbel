@@ -50,6 +50,7 @@
                             <th>Nama Mata Pelajaran</th>
                             <th>Jenjang Pendidikan</th>
                             <th>Deskripsi</th>
+                            <th>Tutor Terkait</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -62,6 +63,7 @@
                                 <td>{{ $subject->name }}</td>
                                 <td>{{ $subject->education_level }}</td>
                                 <td>{{ \Illuminate\Support\Str::limit($subject->description ?: '—', 70) }}</td>
+                                <td>{{ $subject->tutors_count }}</td>
                                 <td>
                                     <span
                                         class="badge {{ $subject->status === 'active' ? 'badge-active' : 'badge-inactive' }}">
@@ -73,7 +75,7 @@
                                         <a href="{{ route('admin.subjects.show', $subject) }}">Detail</a>
                                         <a href="{{ route('admin.subjects.edit', $subject) }}">Edit</a>
                                         <form method="POST" action="{{ route('admin.subjects.destroy', $subject) }}"
-                                            onsubmit="return confirm('Hapus mata pelajaran {{ $subject->code }}? Tindakan ini tidak dapat dibatalkan.');">
+                                            onsubmit="return confirm('Hapus mata pelajaran {{ $subject->code }}? Mata pelajaran yang masih ditugaskan ke tutor tidak dapat dihapus dan perlu dinonaktifkan.');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit">Hapus</button>

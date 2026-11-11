@@ -85,7 +85,7 @@ class TutorController extends Controller
 
         abort_unless($tutor->user->role === 'tutor', 404);
 
-        return view('admin.tutors.edit', array_merge(compact('tutor'), $this->formData()));
+        return view('admin.tutors.edit', array_merge(compact('tutor'), $this->formData($tutor)));
     }
 
     public function update(Request $request, Tutor $tutor): RedirectResponse
@@ -93,7 +93,7 @@ class TutorController extends Controller
         $tutor->load('user');
         abort_unless($tutor->user->role === 'tutor', 404);
 
-        $data = $this->validatedData($request, $tutor->user, false);
+        $data = $this->validatedData($request, $tutor->user, false, $tutor);
 
         DB::transaction(function () use ($data, $tutor) {
             $userData = [
@@ -126,9 +126,9 @@ class TutorController extends Controller
             ->with('success', 'Akun tutor berhasil dinonaktifkan. Riwayat dan profil tutor tetap disimpan.');
     }
 
-    private function validatedData(Request $request, ?User $user = null, bool $creating = true): array
+    private function validatedData(Request $request, ?User $user = null, bool $creating = true, ?Tutor $tutor = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
             'password' => $creating
@@ -142,6 +142,27 @@ class TutorController extends Controller
             'subject_ids' => ['nullable', 'array'],
             'subject_ids.*' => ['integer', Rule::exists('subjects', 'id')],
         ]);
+
+        $subjectIds = array_unique($data['subject_ids'] ?? []);
+
+        if ($subjectIds !== []) {
+            $inactiveSubjectIds = Subject::query()
+                ->whereIn('id', $subjectIds)
+                ->where('status', 'inactive')
+                ->pluck('id')
+                ->all();
+
+            $existingSubjectIds = $tutor?->subjects()->pluck('subjects.id')->all() ?? [];
+            $newInactiveSubjectIds = array_diff($inactiveSubjectIds, $existingSubjectIds);
+
+            if ($newInactiveSubjectIds !== []) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'subject_ids' => 'Mata pelajaran tidak aktif tidak dapat ditugaskan kepada tutor.',
+                ]);
+            }
+        }
+
+        return $data;
     }
 
     private function profileData(array $data): array
@@ -154,14 +175,24 @@ class TutorController extends Controller
         ];
     }
 
-    private function formData(): array
+    private function formData(?Tutor $tutor = null): array
     {
+        $subjectsQuery = Subject::query()
+            ->where('status', 'active');
+
+        if ($tutor) {
+            $existingIds = $tutor->subjects()->pluck('subjects.id')->all();
+
+            if ($existingIds !== []) {
+                $subjectsQuery->orWhereIn('id', $existingIds);
+            }
+        }
+
         return [
-            'subjects' => Subject::query()
-                ->where('status', 'active')
+            'subjects' => $subjectsQuery
                 ->orderBy('education_level')
                 ->orderBy('name')
-                ->get(['id', 'name', 'code', 'education_level']),
+                ->get(['id', 'name', 'code', 'education_level', 'status']),
             'statuses' => ['active', 'inactive'],
             'genders' => Tutor::GENDERS,
         ];

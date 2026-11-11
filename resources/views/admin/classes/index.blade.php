@@ -61,7 +61,7 @@
                                 <td>{{ $classRoom->education_level }}</td>
                                 <td>{{ $classRoom->grade_level }}</td>
                                 <td>{{ $classRoom->capacity }}</td>
-                                <td>{{ $classRoom->students->count() }}</td>
+                                <td>{{ $classRoom->students_count }}</td>
                                 <td><span
                                         class="badge {{ $classRoom->status === 'active' ? 'badge-active' : 'badge-inactive' }}">{{ $classRoom->status === 'active' ? 'Aktif' : 'Nonaktif' }}</span>
                                 </td>
@@ -70,7 +70,7 @@
                                             href="{{ route('admin.classes.show', $classRoom) }}">Detail</a><a
                                             href="{{ route('admin.classes.edit', $classRoom) }}">Edit</a>
                                         <form method="POST" action="{{ route('admin.classes.destroy', $classRoom) }}"
-                                            onsubmit="return confirm('Hapus kelas {{ $classRoom->code }}? Tindakan ini tidak dapat dibatalkan.');">
+                                            onsubmit="return confirm('Hapus kelas {{ $classRoom->code }}? Kelas yang masih memiliki murid tidak dapat dihapus dan perlu dinonaktifkan.');">
                                             @csrf @method('DELETE')<button type="submit">Hapus</button></form>
                                     </div>
                                 </td>

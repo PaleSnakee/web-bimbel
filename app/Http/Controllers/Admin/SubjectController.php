@@ -13,7 +13,7 @@ class SubjectController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Subject::query();
+        $query = Subject::query()->withCount('tutors');
 
         if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($builder) use ($search) {
@@ -77,9 +77,11 @@ class SubjectController extends Controller
 
     public function destroy(Subject $subject): RedirectResponse
     {
-        // Belum ada tabel try out, nilai, maupun relasi kelas-mata pelajaran.
-        // Saat relasi akademik tersedia, tolak penghapusan jika subject masih
-        // digunakan dan arahkan admin untuk mengubah status menjadi nonaktif.
+        if ($subject->tutors()->exists()) {
+            return redirect()->route('admin.subjects.index')
+                ->with('error', "Mata pelajaran {$subject->code} tidak dapat dihapus karena masih ditugaskan kepada tutor. Nonaktifkan mata pelajaran melalui menu edit agar relasi yang ada tetap tersimpan.");
+        }
+
         $subject->delete();
 
         return redirect()->route('admin.subjects.index')

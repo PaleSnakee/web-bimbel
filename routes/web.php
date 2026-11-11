@@ -2,12 +2,13 @@
 
 use App\Http\Controllers\Admin\ClassRoomController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LearningScheduleController;
+use App\Http\Controllers\Admin\LearningSessionController;
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,6 +35,16 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('classes', ClassRoomController::class)->parameters(['classes' => 'classRoom']);
+    Route::resource('learning-schedules', LearningScheduleController::class)
+        ->parameters(['learning-schedules' => 'learningSchedule']);
+    Route::post('learning-schedules/{learningSchedule}/activate', [LearningScheduleController::class, 'activate'])
+        ->name('learning-schedules.activate');
+    Route::post('learning-schedules/{learningSchedule}/deactivate', [LearningScheduleController::class, 'deactivate'])
+        ->name('learning-schedules.deactivate');
+    Route::resource('learning-sessions', LearningSessionController::class)
+        ->parameters(['learning-sessions' => 'learningSession']);
+    Route::patch('learning-sessions/{learningSession}/status', [LearningSessionController::class, 'updateStatus'])
+        ->name('learning-sessions.update-status');
     Route::resource('subjects', SubjectController::class);
     Route::resource('tutors', TutorController::class);
     Route::resource('parents', ParentController::class)->parameters(['parents' => 'parent']);
@@ -56,42 +67,4 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::get('/parent/dashboard', function () {
         return view('parent.dashboard');
     })->name('parent.dashboard');
-});
-
-Route::get('/run-migrations', function () {
-    try {
-        Artisan::call('migrate', [
-            '--force' => true,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Migration berhasil dijalankan.',
-            'output' => Artisan::output(),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-});
-
-Route::get('/run-seeder', function () {
-    try {
-        Artisan::call('db:seed', [
-            '--force' => true,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Seeder berhasil dijalankan.',
-            'output' => Artisan::output(),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
-    }
 });
