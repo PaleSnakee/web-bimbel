@@ -28,16 +28,23 @@
         </div>
         <div class="nav-group">
             <button
-                class="nav-link nav-toggle {{ request()->routeIs('admin.learning-schedules.*') || request()->routeIs('admin.learning-sessions.*') ? 'is-active' : '' }}"
+                class="nav-link nav-toggle {{ request()->routeIs('admin.learning-schedules.*') || request()->routeIs('admin.learning-sessions.*') || request()->routeIs('admin.student-attendances.*') || request()->routeIs('admin.tryouts.*') ? 'is-active' : '' }}"
                 type="button" data-menu-toggle
-                aria-expanded="{{ request()->routeIs('admin.learning-schedules.*') || request()->routeIs('admin.learning-sessions.*') ? 'true' : 'false' }}"><span>▤</span><span>Akademik</span><span
+                aria-expanded="{{ request()->routeIs('admin.learning-schedules.*') || request()->routeIs('admin.learning-sessions.*') || request()->routeIs('admin.student-attendances.*') || request()->routeIs('admin.tryouts.*') ? 'true' : 'false' }}"><span>▤</span><span>Akademik</span><span
                     class="chevron">⌄</span></button>
-            <div class="submenu" @unless (request()->routeIs('admin.learning-schedules.*') || request()->routeIs('admin.learning-sessions.*')) hidden @endunless>
+            <div class="submenu" @unless (request()->routeIs('admin.learning-schedules.*') ||
+                    request()->routeIs('admin.learning-sessions.*') ||
+                    request()->routeIs('admin.student-attendances.*') ||
+                    request()->routeIs('admin.tryouts.*')) hidden @endunless>
                 <a class="submenu-item {{ request()->routeIs('admin.learning-schedules.*') ? 'is-active' : '' }}"
                     href="{{ route('admin.learning-schedules.index') }}">Jadwal Pembelajaran</a>
                 <a class="submenu-item {{ request()->routeIs('admin.learning-sessions.*') ? 'is-active' : '' }}"
                     href="{{ route('admin.learning-sessions.index') }}">Sesi Pembelajaran</a>
-                @foreach (['Absensi', 'Try Out Online', 'Hasil dan Nilai'] as $item)
+                <a class="submenu-item {{ request()->routeIs('admin.student-attendances.*') ? 'is-active' : '' }}"
+                    href="{{ route('admin.student-attendances.index') }}">Absensi</a>
+                <a class="submenu-item {{ request()->routeIs('admin.tryouts.*') ? 'is-active' : '' }}"
+                    href="{{ route('admin.tryouts.index') }}">Try Out Online</a>
+                @foreach (['Hasil dan Nilai'] as $item)
                     <span class="submenu-item">{{ $item }} <small>segera hadir</small></span>
                 @endforeach
             </div>

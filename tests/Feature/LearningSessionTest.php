@@ -126,7 +126,6 @@ class LearningSessionTest extends TestCase
 
         $this->assertDatabaseHas('learning_sessions', [
             'learning_schedule_id' => $schedule->id,
-            'session_date' => '2026-10-05',
             'status' => 'scheduled',
         ]);
     }

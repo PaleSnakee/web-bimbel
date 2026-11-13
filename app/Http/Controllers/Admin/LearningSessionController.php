@@ -168,7 +168,7 @@ class LearningSessionController extends Controller
 
         $sessionDate = Carbon::parse($data['session_date']);
 
-        if ($sessionDate->englishDayOfWeek !== $schedule->day_of_week) {
+        if (strtolower($sessionDate->englishDayOfWeek) !== $schedule->day_of_week) {
             throw ValidationException::withMessages([
                 'session_date' => 'Tanggal sesi harus sesuai dengan hari pada jadwal pembelajaran.',
             ]);

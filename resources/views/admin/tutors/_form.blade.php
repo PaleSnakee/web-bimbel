@@ -93,7 +93,8 @@
             @foreach ($subjects as $subject)
                 <option value="{{ $subject->id }}" @selected(in_array($subject->id, $selectedSubjectIds)) @disabled(($subject->status ?? 'active') === 'inactive' && !in_array($subject->id, $selectedSubjectIds))>
                     {{ $subject->name }} — {{ $subject->education_level }}
-                    ({{ $subject->code }}){{ ($subject->status ?? 'active') === 'inactive' ? ' [Nonaktif]' : '' }}
+                    ({{ $subject->code }})
+                    {{ ($subject->status ?? 'active') === 'inactive' ? ' [Nonaktif]' : '' }}
                 </option>
             @endforeach
         </select>

@@ -40,4 +40,9 @@ class Tutor extends Model
     {
         return $this->hasMany(LearningSchedule::class);
     }
+
+    public function tryouts(): HasMany
+    {
+        return $this->hasMany(Tryout::class);
+    }
 }

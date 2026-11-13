@@ -34,6 +34,9 @@
                         <h2 class="card-title mb-3">Selamat Datang, {{ Auth::user()->name }}</h2>
                         <p class="card-text lead">Anda masuk sebagai <strong>Tutor</strong></p>
                         <hr>
+                        <a href="{{ route('tutor.attendances.index') }}" class="btn btn-dark mb-3">Kelola Absensi</a>
+                        <a href="{{ route('tutor.tryouts.index') }}" class="btn btn-outline-dark mb-3">Kelola Try
+                            Out</a>
                         <p class="text-muted">Dashboard Tutor sedang dalam pengembangan...</p>
                         <form action="{{ route('logout') }}" method="POST" class="d-inline">
                             @csrf
