@@ -10,11 +10,13 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Tutor\AttendanceController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TutorController;
+use App\Http\Controllers\Admin\TryoutQuestionController as AdminQuestionController;
+use App\Http\Controllers\Tutor\TryoutQuestionController as TutorQuestionController;
 use App\Http\Controllers\Admin\TryoutController as AdminTryoutController;
 use App\Http\Controllers\Tutor\TryoutController as TutorTryoutController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +57,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('parents', ParentController::class)->parameters(['parents' => 'parent']);
     Route::resource('students', StudentController::class);
     Route::resource('tryouts', AdminTryoutController::class);
+    Route::resource('tryouts.questions', AdminQuestionController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
     Route::patch('tryouts/{tryout}/status', [AdminTryoutController::class, 'updateStatus'])
         ->name('tryouts.update-status');
     Route::get('student-attendances', [StudentAttendanceController::class, 'index'])
@@ -80,6 +84,9 @@ Route::middleware(['auth', 'role:tutor'])->group(function () {
     Route::resource('/tutor/tryouts', TutorTryoutController::class)
         ->only(['index', 'create', 'store', 'show', 'edit', 'update'])
         ->names('tutor.tryouts');
+    Route::resource('/tutor/tryouts.questions', TutorQuestionController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+        ->names('tutor.tryouts.questions');
 });
 
 Route::middleware(['auth', 'role:student'])->group(function () {
@@ -92,25 +99,4 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::get('/parent/dashboard', function () {
         return view('parent.dashboard');
     })->name('parent.dashboard');
-});
-
-
-Route::get('/migrate-seed', function () {
-    try {
-        Artisan::call('migrate:fresh', [
-            '--seed' => true,
-            '--force' => true,
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Migration dan seeding berhasil dijalankan.',
-            'output' => Artisan::output(),
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage(),
-        ], 500);
-    }
 });

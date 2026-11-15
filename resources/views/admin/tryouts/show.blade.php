@@ -53,9 +53,10 @@
                 </tbody>
             </table>
         </div>
-        <div class="table-actions">
+        <div class="table-actions"><a href="{{ route('admin.tryouts.questions.index', $tryout) }}">Lihat Soal</a>
             @if ($tryout->status === 'draft')
-                <a href="{{ route('admin.tryouts.edit', $tryout) }}">Edit</a>
+                <a href="{{ route('admin.tryouts.questions.index', $tryout) }}">Kelola Soal</a><a
+                    href="{{ route('admin.tryouts.edit', $tryout) }}">Edit</a>
                 <form method="POST" action="{{ route('admin.tryouts.update-status', $tryout) }}">@csrf
                     @method('PATCH')<input type="hidden" name="status" value="published"><button
                         type="submit">Publikasikan</button></form>

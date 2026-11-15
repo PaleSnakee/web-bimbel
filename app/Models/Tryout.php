@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tryout extends Model
 {
@@ -44,5 +45,10 @@ class Tryout extends Model
     {
         return $this->belongsToMany(ClassRoom::class, 'tryout_class_room')
             ->withTimestamps();
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(TryoutQuestion::class)->orderBy('order_number');
     }
 }
