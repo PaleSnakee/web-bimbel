@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\LearningSessionController;
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\StudentAttendanceController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Student\TryoutController as StudentTryoutController;
 use App\Http\Controllers\Tutor\AttendanceController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TutorController;
@@ -89,10 +90,20 @@ Route::middleware(['auth', 'role:tutor'])->group(function () {
         ->names('tutor.tryouts.questions');
 });
 
-Route::middleware(['auth', 'role:student'])->group(function () {
-    Route::get('/student/dashboard', function () {
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+    Route::get('/dashboard', function () {
         return view('student.dashboard');
-    })->name('student.dashboard');
+    })->name('dashboard');
+
+    Route::get('tryouts', [StudentTryoutController::class, 'index'])->name('tryouts.index');
+    Route::get('tryouts/{tryout}', [StudentTryoutController::class, 'show'])->name('tryouts.show');
+    Route::post('tryouts/{tryout}/start', [StudentTryoutController::class, 'start'])->name('tryouts.start');
+    Route::get('tryouts/{tryout}/attempts/{attempt}', [StudentTryoutController::class, 'attempt'])
+        ->name('tryouts.attempts.show');
+    Route::put('tryouts/{tryout}/attempts/{attempt}/answers', [StudentTryoutController::class, 'saveAnswer'])
+        ->name('tryouts.attempts.answers.update');
+    Route::post('tryouts/{tryout}/attempts/{attempt}/submit', [StudentTryoutController::class, 'submit'])
+        ->name('tryouts.attempts.submit');
 });
 
 Route::middleware(['auth', 'role:parent'])->group(function () {

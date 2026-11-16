@@ -51,4 +51,9 @@ class Tryout extends Model
     {
         return $this->hasMany(TryoutQuestion::class)->orderBy('order_number');
     }
+
+    public function attempts(): HasMany
+    {
+        return $this->hasMany(TryoutAttempt::class);
+    }
 }

@@ -104,5 +104,11 @@ class TryoutQuestionService
                 'tryout' => 'Soal hanya dapat dikelola pada Try Out berstatus draft.',
             ]);
         }
+
+        if ($tryout->attempts()->exists()) {
+            throw ValidationException::withMessages([
+                'tryout' => 'Soal tidak dapat diubah karena Try Out telah memiliki riwayat pengerjaan siswa.',
+            ]);
+        }
     }
 }

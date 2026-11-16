@@ -32,4 +32,9 @@ class TryoutQuestion extends Model
     {
         return $this->hasMany(TryoutQuestionOption::class)->orderBy('order_number');
     }
+
+    public function attemptAnswers(): HasMany
+    {
+        return $this->hasMany(TryoutAttemptAnswer::class);
+    }
 }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ClassRoom;
 use App\Models\Subject;
 use App\Models\Tryout;
+use App\Models\TryoutAttempt;
 use App\Models\TryoutQuestion;
 use App\Models\Tutor;
 use App\Models\User;
@@ -218,6 +219,39 @@ class TryoutQuestionManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('admin.tryouts.questions.store', $tryout), $this->payload())
             ->assertSessionHasErrors('tryout');
+    }
+
+    public function test_questions_cannot_be_changed_after_a_student_attempt_exists(): void
+    {
+        $admin = $this->user('admin');
+        $tryout = $this->tryout();
+        $this->actingAs($admin)->post(route('admin.tryouts.questions.store', $tryout), $this->payload());
+
+        $question = TryoutQuestion::firstOrFail();
+        $studentUser = $this->user('student');
+        $student = $studentUser->student()->create([
+            'class_room_id' => $tryout->classRooms()->value('class_rooms.id'),
+            'nis' => 'NIS-' . uniqid(),
+            'education_level' => 'SD',
+        ]);
+
+        TryoutAttempt::create([
+            'tryout_id' => $tryout->id,
+            'student_id' => $student->id,
+            'started_at' => now(),
+            'expires_at' => now()->addHour(),
+            'status' => 'in_progress',
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.tryouts.questions.update', [$tryout, $question]), $this->payload())
+            ->assertSessionHasErrors('tryout');
+
+        $this->actingAs($admin)
+            ->delete(route('admin.tryouts.questions.destroy', [$tryout, $question]))
+            ->assertSessionHasErrors('tryout');
+
+        $this->assertDatabaseHas('tryout_questions', ['id' => $question->id]);
     }
 
     public function test_users_without_required_role_cannot_access_question_routes(): void
