@@ -12,6 +12,11 @@ use Illuminate\Validation\ValidationException;
 
 class SaveTryoutAnswerService
 {
+    public function __construct(
+        private readonly GradeTryoutAttemptService $gradingService,
+    ) {
+    }
+
     public function save(
         Student $student,
         TryoutAttempt $attempt,
@@ -27,6 +32,8 @@ class SaveTryoutAnswerService
 
             if ($attempt->status === 'in_progress' && now()->gte($attempt->expires_at)) {
                 $attempt->update(['status' => 'expired']);
+                $attempt->refresh();
+                $this->gradingService->gradeLocked($attempt);
 
                 return null;
             }

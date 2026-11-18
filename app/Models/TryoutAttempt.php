@@ -20,12 +20,30 @@ class TryoutAttempt extends Model
         'expires_at',
         'submitted_at',
         'status',
+        'total_questions',
+        'answered_questions',
+        'correct_answers',
+        'incorrect_answers',
+        'unanswered_questions',
+        'total_points',
+        'earned_points',
+        'final_score',
+        'graded_at',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'expires_at' => 'datetime',
         'submitted_at' => 'datetime',
+        'graded_at' => 'datetime',
+        'total_questions' => 'integer',
+        'answered_questions' => 'integer',
+        'correct_answers' => 'integer',
+        'incorrect_answers' => 'integer',
+        'unanswered_questions' => 'integer',
+        'total_points' => 'integer',
+        'earned_points' => 'integer',
+        'final_score' => 'decimal:2',
     ];
 
     public function tryout(): BelongsTo

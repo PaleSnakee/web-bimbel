@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Tryout;
 use App\Models\TryoutAttempt;
+use App\Services\GradeTryoutAttemptService;
 use App\Services\SaveTryoutAnswerService;
 use App\Services\StartTryoutAttemptService;
 use App\Services\StudentTryoutAccessService;
@@ -67,17 +68,14 @@ class TryoutController extends Controller
         Tryout $tryout,
         TryoutAttempt $attempt,
         StudentTryoutAccessService $accessService,
-    ): View {
+        GradeTryoutAttemptService $gradingService,
+    ): View|RedirectResponse {
         $student = $accessService->studentFor($request->user());
         $attempt = $this->ownedAttempt($student->id, $tryout->id, $attempt->id);
-
-        if ($attempt->status === 'in_progress' && now()->gte($attempt->expires_at)) {
-            $attempt->update(['status' => 'expired']);
-            $attempt->refresh();
-        }
+        $attempt = $gradingService->finalizeExpired($attempt);
 
         if ($attempt->status !== 'in_progress') {
-            return view('student.tryouts.finished', compact('tryout', 'attempt'));
+            return redirect()->route('student.tryouts.attempts.result', [$tryout, $attempt]);
         }
 
         $tryout->load([
@@ -130,8 +128,56 @@ class TryoutController extends Controller
         $attempt = $this->ownedAttempt($student->id, $tryout->id, $attempt->id);
         $attempt = $service->submit($student, $attempt);
 
-        return redirect()->route('student.tryouts.attempts.show', [$tryout, $attempt])
-            ->with('success', 'Jawaban Try Out berhasil dikumpulkan.');
+        return redirect()->route('student.tryouts.attempts.result', [$tryout, $attempt])
+            ->with('success', 'Jawaban Try Out berhasil dinilai.');
+    }
+
+    public function result(
+        Request $request,
+        Tryout $tryout,
+        TryoutAttempt $attempt,
+        StudentTryoutAccessService $accessService,
+        GradeTryoutAttemptService $gradingService,
+    ): View {
+        $student = $accessService->studentFor($request->user());
+        $attempt = $this->ownedAttempt($student->id, $tryout->id, $attempt->id);
+        $attempt = $gradingService->finalizeExpired($attempt);
+
+        abort_unless(in_array($attempt->status, ['submitted', 'expired'], true) && $attempt->graded_at, 404);
+
+        $tryout->load('subject:id,code,name');
+        $attempt->load('student.user:id,name');
+
+        return view('student.tryouts.result', compact('tryout', 'attempt'));
+    }
+
+    public function review(
+        Request $request,
+        Tryout $tryout,
+        TryoutAttempt $attempt,
+        StudentTryoutAccessService $accessService,
+        GradeTryoutAttemptService $gradingService,
+    ): View {
+        $student = $accessService->studentFor($request->user());
+        $attempt = $this->ownedAttempt($student->id, $tryout->id, $attempt->id);
+        $attempt = $gradingService->finalizeExpired($attempt);
+
+        abort_unless(in_array($attempt->status, ['submitted', 'expired'], true) && $attempt->graded_at, 404);
+
+        $tryout->load([
+            'subject:id,code,name',
+            'questions' => fn ($query) => $query
+                ->select(['id', 'tryout_id', 'question_text', 'points', 'order_number'])
+                ->with([
+                    'options' => fn ($optionQuery) => $optionQuery
+                        ->select(['id', 'tryout_question_id', 'option_label', 'option_text', 'is_correct', 'order_number']),
+                    'attemptAnswers' => fn ($answerQuery) => $answerQuery
+                        ->where('tryout_attempt_id', $attempt->id)
+                        ->select(['id', 'tryout_attempt_id', 'tryout_question_id', 'tryout_question_option_id']),
+                ]),
+        ]);
+
+        return view('student.tryouts.review', compact('tryout', 'attempt'));
     }
 
     private function ownedAttempt(int $studentId, int $tryoutId, int $attemptId): TryoutAttempt

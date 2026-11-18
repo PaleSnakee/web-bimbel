@@ -271,7 +271,13 @@ class StudentTryoutAttemptTest extends TestCase
 
         $this->actingAs($student->user)
             ->post(route('student.tryouts.attempts.submit', [$tryout, $attempt]))
-            ->assertSessionHasErrors('attempt');
+            ->assertRedirect(route('student.tryouts.attempts.result', [$tryout, $attempt]));
+
+        $this->assertDatabaseHas('tryout_attempts', [
+            'id' => $attempt->id,
+            'status' => 'expired',
+        ]);
+        $this->assertNotNull($attempt->fresh()->graded_at);
     }
 
     public function test_submit_is_idempotent_and_locks_answers(): void
@@ -284,7 +290,7 @@ class StudentTryoutAttemptTest extends TestCase
 
         $this->actingAs($student->user)
             ->post(route('student.tryouts.attempts.submit', [$tryout, $attempt]))
-            ->assertRedirect(route('student.tryouts.attempts.show', [$tryout, $attempt]));
+            ->assertRedirect(route('student.tryouts.attempts.result', [$tryout, $attempt]));
 
         $attempt->refresh();
         $submittedAt = $attempt->submitted_at;
@@ -293,7 +299,7 @@ class StudentTryoutAttemptTest extends TestCase
 
         $this->actingAs($student->user)
             ->post(route('student.tryouts.attempts.submit', [$tryout, $attempt]))
-            ->assertRedirect(route('student.tryouts.attempts.show', [$tryout, $attempt]));
+            ->assertRedirect(route('student.tryouts.attempts.result', [$tryout, $attempt]));
 
         $attempt->refresh();
         $this->assertTrue($attempt->submitted_at->equalTo($submittedAt));

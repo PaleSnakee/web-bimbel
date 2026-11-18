@@ -14,7 +14,9 @@ use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\Admin\TryoutQuestionController as AdminQuestionController;
 use App\Http\Controllers\Tutor\TryoutQuestionController as TutorQuestionController;
 use App\Http\Controllers\Admin\TryoutController as AdminTryoutController;
+use App\Http\Controllers\Admin\TryoutResultController as AdminTryoutResultController;
 use App\Http\Controllers\Tutor\TryoutController as TutorTryoutController;
+use App\Http\Controllers\Tutor\TryoutResultController as TutorTryoutResultController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -68,6 +70,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('student-attendances.show');
     Route::get('student-attendances/{learningSession}/edit', [StudentAttendanceController::class, 'edit'])
         ->name('student-attendances.edit');
+    Route::get('tryout-results', [AdminTryoutResultController::class, 'index'])
+        ->name('tryout-results.index');
     Route::put('student-attendances/{learningSession}', [StudentAttendanceController::class, 'update'])
         ->name('student-attendances.update');
 });
@@ -88,6 +92,8 @@ Route::middleware(['auth', 'role:tutor'])->group(function () {
     Route::resource('/tutor/tryouts.questions', TutorQuestionController::class)
         ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
         ->names('tutor.tryouts.questions');
+    Route::get('/tutor/tryout-results', [TutorTryoutResultController::class, 'index'])
+        ->name('tutor.tryout-results.index');
 });
 
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
@@ -98,6 +104,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('tryouts', [StudentTryoutController::class, 'index'])->name('tryouts.index');
     Route::get('tryouts/{tryout}', [StudentTryoutController::class, 'show'])->name('tryouts.show');
     Route::post('tryouts/{tryout}/start', [StudentTryoutController::class, 'start'])->name('tryouts.start');
+    Route::get('tryouts/{tryout}/attempts/{attempt}/result', [StudentTryoutController::class, 'result'])
+        ->name('tryouts.attempts.result');
+    Route::get('tryouts/{tryout}/attempts/{attempt}/review', [StudentTryoutController::class, 'review'])
+        ->name('tryouts.attempts.review');
     Route::get('tryouts/{tryout}/attempts/{attempt}', [StudentTryoutController::class, 'attempt'])
         ->name('tryouts.attempts.show');
     Route::put('tryouts/{tryout}/attempts/{attempt}/answers', [StudentTryoutController::class, 'saveAnswer'])

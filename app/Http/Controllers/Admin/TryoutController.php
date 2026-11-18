@@ -114,6 +114,16 @@ class TryoutController extends Controller
             ]);
         }
 
+        if ($tryout->status === 'draft' && $data['status'] === 'published') {
+            $totalPoints = (int) $tryout->questions()->sum('points');
+
+            if (! $tryout->questions()->exists() || $totalPoints <= 0) {
+                throw ValidationException::withMessages([
+                    'status' => 'Try Out harus memiliki soal dengan total bobot poin lebih dari nol sebelum dipublikasikan.',
+                ]);
+            }
+        }
+
         $tryout->update(['status' => $data['status']]);
 
         return redirect()->route('admin.tryouts.show', $tryout)

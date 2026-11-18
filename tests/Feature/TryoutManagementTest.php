@@ -116,6 +116,19 @@ class TryoutManagementTest extends TestCase
     {
         $admin = $this->user('admin');
         $tryout = $this->tryout($this->subject(), [$this->classRoom()]);
+        $question = $tryout->questions()->create([
+            'question_text' => 'Soal publikasi',
+            'points' => 10,
+            'order_number' => 1,
+        ]);
+        foreach (['A', 'B', 'C', 'D'] as $index => $label) {
+            $question->options()->create([
+                'option_label' => $label,
+                'option_text' => 'Pilihan ' . $label,
+                'is_correct' => $label === 'A',
+                'order_number' => $index + 1,
+            ]);
+        }
 
         $this->actingAs($admin)
             ->patch(route('admin.tryouts.update-status', $tryout), ['status' => 'published'])
