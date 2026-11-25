@@ -23,7 +23,8 @@ class StudentTryoutAccessService
 
     public function ensureEligible(Student $student, Tryout $tryout, ?Carbon $now = null): void
     {
-        $now ??= now();
+        $timezone = config('app.timezone', 'Asia/Jakarta');
+        $now = ($now ? $now->copy() : now())->setTimezone($timezone);
 
         if ($tryout->status !== 'published') {
             throw ValidationException::withMessages(['tryout' => 'Try Out belum tersedia untuk dikerjakan.']);
@@ -33,11 +34,14 @@ class StudentTryoutAccessService
             abort(404);
         }
 
-        if ($now->lt($tryout->start_at)) {
+        $startAt = $tryout->start_at ? $tryout->start_at->copy()->setTimezone($timezone) : null;
+        $endAt = $tryout->end_at ? $tryout->end_at->copy()->setTimezone($timezone) : null;
+
+        if ($startAt && $now->lt($startAt)) {
             throw ValidationException::withMessages(['tryout' => 'Try Out belum dimulai.']);
         }
 
-        if ($now->gte($tryout->end_at)) {
+        if ($endAt && $now->gte($endAt)) {
             throw ValidationException::withMessages(['tryout' => 'Masa pengerjaan Try Out telah berakhir.']);
         }
     }

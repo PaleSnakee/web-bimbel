@@ -11,8 +11,6 @@
 <body class="bg-light">
     <nav class="navbar navbar-dark bg-dark">
         <div class="container"><a class="navbar-brand" href="{{ route('tutor.dashboard') }}">El Renaissance</a>
-            <form method="POST" action="{{ route('logout') }}">@csrf<button
-                    class="btn btn-outline-light btn-sm">Logout</button></form>
         </div>
     </nav>
     <main class="container py-4">

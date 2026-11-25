@@ -7,8 +7,12 @@ use App\Http\Controllers\Admin\LearningSessionController;
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\StudentAttendanceController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Parent\ChildController as ParentChildController;
+use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
+use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\TryoutController as StudentTryoutController;
 use App\Http\Controllers\Tutor\AttendanceController;
+use App\Http\Controllers\Tutor\DashboardController as TutorDashboardController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\Admin\TryoutQuestionController as AdminQuestionController;
@@ -77,9 +81,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 Route::middleware(['auth', 'role:tutor'])->group(function () {
-    Route::get('/tutor/dashboard', function () {
-        return view('tutor.dashboard');
-    })->name('tutor.dashboard');
+    Route::get('/tutor/dashboard', [TutorDashboardController::class, 'index'])->name('tutor.dashboard');
     Route::get('/tutor/attendances', [AttendanceController::class, 'index'])
         ->name('tutor.attendances.index');
     Route::get('/tutor/attendances/{learningSession}/edit', [AttendanceController::class, 'edit'])
@@ -97,9 +99,7 @@ Route::middleware(['auth', 'role:tutor'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('student.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('tryouts', [StudentTryoutController::class, 'index'])->name('tryouts.index');
     Route::get('tryouts/{tryout}', [StudentTryoutController::class, 'show'])->name('tryouts.show');
@@ -116,8 +116,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
         ->name('tryouts.attempts.submit');
 });
 
-Route::middleware(['auth', 'role:parent'])->group(function () {
-    Route::get('/parent/dashboard', function () {
-        return view('parent.dashboard');
-    })->name('parent.dashboard');
+Route::middleware(['auth', 'role:parent'])->prefix('parent')->name('parent.')->group(function () {
+    Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/children', [ParentChildController::class, 'index'])->name('children.index');
+    Route::get('/children/{student}', [ParentChildController::class, 'show'])->name('children.show');
+    Route::get('/tryouts', [ParentChildController::class, 'tryouts'])->name('tryouts.index');
+    Route::get('/attendances', [ParentChildController::class, 'attendances'])->name('attendances.index');
 });

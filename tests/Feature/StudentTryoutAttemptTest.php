@@ -327,4 +327,222 @@ class StudentTryoutAttemptTest extends TestCase
         $this->get(route('student.tryouts.index'))->assertRedirect(route('login'));
         $this->actingAs($admin)->get(route('student.tryouts.index'))->assertRedirect('/login');
     }
+
+    public function test_student_cannot_start_tryout_before_start_at(): void
+    {
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 12:00:00', 'Asia/Jakarta'),
+        ]);
+        $this->question($tryout);
+
+        // 1 detik sebelum waktu mulai
+        Carbon::setTestNow(Carbon::parse('2026-11-26 07:59:59', 'Asia/Jakarta'));
+
+        $response = $this->actingAs($student->user)
+            ->post(route('student.tryouts.start', $tryout));
+
+        $response->assertSessionHasErrors(['tryout' => 'Try Out belum dimulai.']);
+        $this->assertSame(0, TryoutAttempt::where('tryout_id', $tryout->id)->count());
+    }
+
+    public function test_student_can_start_tryout_exactly_at_start_at(): void
+    {
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 12:00:00', 'Asia/Jakarta'),
+        ]);
+        $this->question($tryout);
+
+        // Tepat pada waktu mulai (start_at)
+        Carbon::setTestNow(Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'));
+
+        $response = $this->actingAs($student->user)
+            ->post(route('student.tryouts.start', $tryout));
+
+        $response->assertRedirect();
+        $this->assertSame(1, TryoutAttempt::where('tryout_id', $tryout->id)->count());
+    }
+
+    public function test_student_can_start_tryout_during_active_period(): void
+    {
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 12:00:00', 'Asia/Jakarta'),
+        ]);
+        $this->question($tryout);
+
+        // Di tengah periode aktif Try Out
+        Carbon::setTestNow(Carbon::parse('2026-11-26 09:30:00', 'Asia/Jakarta'));
+
+        $response = $this->actingAs($student->user)
+            ->post(route('student.tryouts.start', $tryout));
+
+        $response->assertRedirect();
+        $this->assertSame(1, TryoutAttempt::where('tryout_id', $tryout->id)->count());
+    }
+
+    public function test_student_cannot_start_tryout_after_end_at(): void
+    {
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 12:00:00', 'Asia/Jakarta'),
+        ]);
+        $this->question($tryout);
+
+        // Tepat pada waktu selesai (end_at)
+        Carbon::setTestNow(Carbon::parse('2026-11-26 12:00:00', 'Asia/Jakarta'));
+
+        $response = $this->actingAs($student->user)
+            ->post(route('student.tryouts.start', $tryout));
+
+        $response->assertSessionHasErrors(['tryout' => 'Masa pengerjaan Try Out telah berakhir.']);
+        $this->assertSame(0, TryoutAttempt::where('tryout_id', $tryout->id)->count());
+
+        // 1 detik setelah waktu selesai
+        Carbon::setTestNow(Carbon::parse('2026-11-26 12:00:01', 'Asia/Jakarta'));
+
+        $response2 = $this->actingAs($student->user)
+            ->post(route('student.tryouts.start', $tryout));
+
+        $response2->assertSessionHasErrors(['tryout' => 'Masa pengerjaan Try Out telah berakhir.']);
+    }
+
+    public function test_time_displayed_on_detail_page_matches_backend_validation(): void
+    {
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 12:00:00', 'Asia/Jakarta'),
+        ]);
+        $this->question($tryout);
+
+        Carbon::setTestNow(Carbon::parse('2026-11-26 08:30:00', 'Asia/Jakarta'));
+
+        $response = $this->actingAs($student->user)
+            ->get(route('student.tryouts.show', $tryout));
+
+        $response->assertOk()
+            ->assertSee('26 Nov 2026 08:00')
+            ->assertSee('26 Nov 2026 12:00');
+
+        // Siswa dapat langsung memulai tanpa error "Try Out belum dimulai"
+        $startResponse = $this->actingAs($student->user)
+            ->post(route('student.tryouts.start', $tryout));
+
+        $startResponse->assertRedirect();
+        $startResponse->assertSessionHasNoErrors();
+    }
+
+    public function test_time_comparison_runs_consistently_using_wib_timezone(): void
+    {
+        $this->assertSame('Asia/Jakarta', config('app.timezone'));
+
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+
+        // Jadwal dibuat dalam format WIB 09:00 WIB
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 09:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 11:00:00', 'Asia/Jakarta'),
+        ]);
+        $this->question($tryout);
+
+        // Pada jam 09:05 WIB (jika UTC, ini jam 02:05 UTC yang sebelumnya menyebabkan error bug)
+        Carbon::setTestNow(Carbon::parse('2026-11-26 09:05:00', 'Asia/Jakarta'));
+
+        $response = $this->actingAs($student->user)
+            ->post(route('student.tryouts.start', $tryout));
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect();
+        $this->assertSame(1, TryoutAttempt::where('tryout_id', $tryout->id)->count());
+    }
+
+    public function test_in_progress_attempt_can_be_continued_as_expected(): void
+    {
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 12:00:00', 'Asia/Jakarta'),
+        ]);
+        $this->question($tryout);
+
+        Carbon::setTestNow(Carbon::parse('2026-11-26 08:30:00', 'Asia/Jakarta'));
+
+        // Mulai attempt
+        $this->actingAs($student->user)->post(route('student.tryouts.start', $tryout));
+        $attempt = TryoutAttempt::firstOrFail();
+
+        // 10 menit kemudian siswa melanjutkan
+        Carbon::setTestNow(Carbon::parse('2026-11-26 08:40:00', 'Asia/Jakarta'));
+
+        $response = $this->actingAs($student->user)
+            ->get(route('student.tryouts.attempts.show', [$tryout, $attempt]));
+
+        $response->assertOk();
+        $response->assertSee($tryout->title);
+    }
+
+    public function test_timer_and_deadline_remain_accurate(): void
+    {
+        $classRoom = $this->classRoom();
+        $student = $this->student($classRoom);
+
+        // Durasi 60 menit, tapi sisa waktu pelaksanaan hanya 30 menit
+        $tryout = $this->tryout($classRoom, [
+            'start_at' => Carbon::parse('2026-11-26 08:00:00', 'Asia/Jakarta'),
+            'end_at' => Carbon::parse('2026-11-26 09:00:00', 'Asia/Jakarta'),
+            'duration_minutes' => 60,
+        ]);
+        $question = $this->question($tryout);
+
+        Carbon::setTestNow(Carbon::parse('2026-11-26 08:30:00', 'Asia/Jakarta'));
+
+        $this->actingAs($student->user)->post(route('student.tryouts.start', $tryout));
+        $attempt = TryoutAttempt::firstOrFail();
+
+        // Batas expires_at harus dibatasi oleh end_at (09:00:00), bukan started_at + 60 min (09:30:00)
+        $this->assertTrue(
+            $attempt->expires_at->equalTo(Carbon::parse('2026-11-26 09:00:00', 'Asia/Jakarta'))
+        );
+
+        // Melewati batas waktu expires_at membuat attempt berstatus expired
+        Carbon::setTestNow(Carbon::parse('2026-11-26 09:00:01', 'Asia/Jakarta'));
+
+        $this->actingAs($student->user)
+            ->putJson(route('student.tryouts.attempts.answers.update', [$tryout, $attempt]), [
+                'question_id' => $question->id,
+                'option_id' => $question->options()->first()->id,
+            ])
+            ->assertStatus(422);
+
+        $this->assertSame('expired', $attempt->fresh()->status);
+    }
+
+    public function test_student_cannot_access_tryout_belonging_to_another_class(): void
+    {
+        $classRoomA = $this->classRoom();
+        $classRoomB = $this->classRoom();
+        $studentA = $this->student($classRoomA);
+        $tryoutB = $this->tryout($classRoomB);
+
+        $this->actingAs($studentA->user)
+            ->get(route('student.tryouts.show', $tryoutB))
+            ->assertNotFound();
+
+        $this->actingAs($studentA->user)
+            ->post(route('student.tryouts.start', $tryoutB))
+            ->assertNotFound();
+    }
 }

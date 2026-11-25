@@ -667,6 +667,41 @@ button {
     background: #f2f4f7;
     color: #667085;
 }
+.badge-warning {
+    background: #fff4e5;
+    color: #b54708;
+}
+.badge-info {
+    background: #eff8ff;
+    color: #175cd3;
+}
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+.metric-box {
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fafbfc;
+}
+.metric-box p {
+    margin: 0;
+    font-size: 11px;
+    color: var(--muted);
+}
+.metric-box strong {
+    display: block;
+    font-size: 18px;
+    margin-top: 4px;
+    color: var(--ink);
+}
+@media (max-width: 720px) {
+    .metric-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 .table-actions {
     display: flex;
     align-items: center;

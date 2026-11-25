@@ -8,9 +8,9 @@
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('tutor.dashboard') }}">El Renaissance</a>
-            <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-outline-light btn-sm">Logout</button></form>
+        <div class="container position-relative">
+            <button class="btn btn-outline-light btn-sm" onclick="window.location.href='{{ route('tutor.dashboard') }}'">Kembali</button>
+            <a class="navbar-brand position-absolute start-50 translate-middle-x m-0" href="{{ route('tutor.dashboard') }}">El Renaissance</a>
         </div>
     </nav>
     <main class="container py-4">
